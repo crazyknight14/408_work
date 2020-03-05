@@ -84,6 +84,7 @@ begin
      33:writeln(' Duplicate identifier.');
      34:writeln(' Procedures nested too deep.');
      35:writeln(' Program Too Long.');
+     36:writeln(' Left parenthesis missing.');
    end;
    HALT
 end;
@@ -449,6 +450,8 @@ begin { statement }
             statement;
             code[cx1].ad:=codeinx;
             (* Place Your Code for ELSE Here *)
+            if sym=elsesym then getsym;
+            statement;
        end;
  beginsym:begin
             repeat
@@ -472,27 +475,91 @@ begin { statement }
           end;
  repeatsym:begin
                 (* Place Your Code for REPEAT UNTIL Here *)
-              do{
-                  getsym;
-                  statement;                
-              }while(sym=semicolon);
-              if sym<>untilsym then error(25)
-              else getsym;
-              condition;
-
-
+            // BEGIN ADDITION
+              repeat
+                getsym;
+                statement;
+              until sym<>semicolon;
+              if sym=untilsym then getsym
+              else error(25);    //Missing UNTIL error
+              condition;     
+            // END ADDITION       
            end;
  forsym:begin
                 (* Place Your Code for FOR Here *)
+            // BEGIN ADDITION
+              getsym;
+              if sym<>ident then error(36); // Missing IDENT error
+              i:=position(id);
+              if i=0 then error(11)
+              else
+                if table[i].kind<>variable then error(12);
+              getsym;
+              
+              if sym<>becomes then error(13);
+              getsym;
+              expression;
+              if (sym<>tosym) and (sym<>downtosym) then error(26); // Missing TO or DOWNTO error
+              getsym;
+              expression;
+              if sym<>dosym then error(18); // Missing DO error               
+              getsym;
+              statement;
+              // END ADDITION
         end;
  casesym:begin
                 (* Place Your Code for CASE Here *)
+              // BEGIN ADDITION
+              getsym;
+              expression;
+              if sym<>ofsym then
+                error(27); // Missing OF error
+              getsym;
+              while (sym=number) or (sym=ident) do
+              begin
+                getsym;                  
+                if sym<>colon then error(28); // Missing Colon error
+                getsym;
+                statement;
+                if sym<>semicolon then error(17); // Missing Semicolon error
+                getsym;
+              end;
+              if sym<>cendsym then
+                error(31); // Missing CEND error
+              getsym;
+              // END ADDITION
          end;
  writelnsym:begin
                  (* Place Your Code for WRITELN Here *)
+            // BEGIN ADDITION
+              getsym;
+              if sym=lparen then                
+                repeat
+                  getsym;
+                  expression;
+                until sym<>comma
+              else
+                error(5);
+              
+              if sym=rparen then getsym
+              else error(22);
+            // END ADDITION
             end;
 writesym:begin
                  (* Place Your Code for WRITE Here *)
+            //BEGIN ADDITION
+              getsym;
+              if sym=lparen then                
+                repeat
+                  getsym;
+                  expression;
+                until sym<>comma
+              else
+                error(5);
+              
+              if sym=rparen then getsym
+              else error(22);
+            // END ADDITION
          end;
 
 end { case }

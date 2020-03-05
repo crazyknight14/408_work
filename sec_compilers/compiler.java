@@ -235,7 +235,8 @@ public class compiler
 			"Number is too large",/* 30 */
 			"Left parenthesis expected",/* 31 */
 			"Identifier expected",/* 32 */
-			"An expression cannot begin with this symbol"/* 33 */
+			"An expression cannot begin with this symbol",/* 33 */
+			"Incorrect Object Type. Must be Const." /*34*/
 		};
 
 		/* Simple Error Outputting Function */
@@ -972,6 +973,10 @@ public class compiler
 					Statement(lev, tx);
 					code[cx1].ad = codeinx;
 					/* Place Your Code for Else Here */
+					if(sym == SYMBOL.ELSESYM){
+						GetSym();
+						Statement(lev, tx);
+					}
 					break; /* IFSYM */
 
 				case WHILESYM:
@@ -993,6 +998,7 @@ public class compiler
 
 				case REPEATSYM:
 					/* Place Your Code for Repeat-Until Here */
+				// BEGIN ADDITION
 					do{
 						GetSym();
 						Statement(lev, tx);                
@@ -1003,10 +1009,12 @@ public class compiler
 					else 
 						Error(23);
 					Condition(lev, tx);
+				// END ADDITION
 					break; /* REPEATSYM */
 
 				case WRITELNSYM:
 					/* Place Your Code for Writeln Here */
+				// BEGIN ADDITION
 					GetSym();
 					if(sym == SYMBOL.LPAREN){
 						do{
@@ -1021,6 +1029,7 @@ public class compiler
 					}
 					else
 						Error(22);
+				// END ADDITION
 					break; /* WRITELNSYM */
 
 				case CALLSYM:
@@ -1041,14 +1050,86 @@ public class compiler
 
 				case CASESYM:
 					/* Place Your Code for Case Here */
+				// BEGIN ADDITION
+					GetSym();
+					Expression(lev, tx);
+					if(sym == SYMBOL.OFSYM){
+						GetSym();
+					}
+					else{
+						Error(25);
+					}
+					while(sym == SYMBOL.NUMBER|| sym == SYMBOL.IDENT){
+						if(sym == SYMBOL.IDENT){
+							i = Position(id, tx);
+							if (table[i].kind != OBJECTS.Constant){
+								Error(34); // Object Type Error
+							}
+						}
+						GetSym();
+						if(sym == SYMBOL.COLON){
+							GetSym();
+							Statement(lev, tx);
+						}
+						else{
+							Error(29);
+						}
+						if(sym == SYMBOL.SEMICOLON){
+							GetSym();
+						}
+						else{
+							Error(17);
+						}					
+					}
+					if(sym == SYMBOL.CENDSYM){
+						GetSym();						
+					}
+					else{
+						Error(22);
+					}
+				// END ADDITION
 					break; /* CASESYM */
 
 				case FORSYM:
 					/* Place Your Code for For-Do Here */
+				// BEGIN ADDITION
+					GetSym();
+					if(sym != SYMBOL.IDENT){
+						Error(11);
+					}
+					i = Position(id, tx);
+					if (table[i].kind != OBJECTS.Variable){
+						Error(12);
+					}
+					GetSym();
+					
+					if(sym == SYMBOL.BECOMES){
+						GetSym();
+						Expression(lev, tx);
+					}
+					else{
+						Error(13);/*missing := error*/
+					}
+					if(sym == SYMBOL.TOSYM || sym == SYMBOL.DOWNTOSYM){
+						GetSym();
+						Expression(lev, tx);
+						if(sym == SYMBOL.DOSYM){
+							GetSym();
+							Statement(lev, tx);
+						}
+						else{
+							Error(18);/*missing DO error*/
+						}
+					}
+					else{
+						Error(26);/*missing TO or DOWNTO error*/
+					}
+				// END ADDITION
 					break; /* FORSYM */
 
 				case WRITESYM:
 					/* Place Your Code for Write Here */
+				// BEGIN ADDITION
 					GetSym();
 					if(sym == SYMBOL.LPAREN){
 						do{
@@ -1063,6 +1144,7 @@ public class compiler
 					}
 					else
 						Error(22);
+				// END ADDITION
 					break;
 			}
 		}

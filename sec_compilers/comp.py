@@ -483,6 +483,7 @@ def statement(tx, level):
         fixJmp(cx2, codeIndx)
     elif sym == "REPEAT":
     	# place your code for REPEAT here
+        #BEGIN ADDITION
         while(True):
             getsym()
             statement(tx, level)
@@ -492,14 +493,24 @@ def statement(tx, level):
             error(27) # missing UNTIL error
         getsym()
         condition(tx, level)
+        #END ADDITION
         
     elif sym == "FOR":
     	# place your code for FOR here
-        # BEGIN ADDED
+        # BEGIN ADDITION
         getsym()
         if (sym != "ident"):
-            error(11) # missing ident error 
-        statement(tx, level)
+            error(11) # missing IDENT error 
+        i = position(tx, id)
+        if i==0:
+            error(11)
+        elif table[i].kind != "variable":
+            error(12)
+        getsym()
+        if sym != 'becomes':
+            error(13) #missing Assignment Operator
+        getsym()
+        expression(tx, level)
         if (sym != 'TO' and sym != 'DOWNTO'):
             error(31) # missing TO or DOWNTO error
         getsym()
@@ -508,17 +519,23 @@ def statement(tx, level):
             error(18) # missing DO error
         getsym()
         statement(tx, level)
-        # END ADDED
+        # END ADDITION
         
     elif sym == "CASE":
     	# place your code for CASE here
-        # BEGIN ADDED
+        # BEGIN ADDITION
         getsym()
         expression(tx, level)
         if (sym != 'OF'):
             error(29) # missing OF error
         getsym()
         while( sym == 'number' or sym == 'ident'):
+            if(sym == 'ident'):
+                i = position(tx, id)
+                if i==0:
+                    error(11)
+                elif table[i].kind != "const":
+                    error(12)
             getsym()
             if (sym != 'colon'):
                 error(30) # missing colon error
@@ -530,11 +547,11 @@ def statement(tx, level):
         if (sym != 'CEND'):
             error(32) # missing CEND error
         getsym()
-        # END ADDED
+        # END ADDITION
 
     elif sym == "WRITE":
     	# place your code for WRITE here
-        # BEGIN ADDED
+        # BEGIN ADDITION
         getsym()
         if (sym != 'lparen'):
             error(28) # missing Left Parenthesis error       
@@ -546,11 +563,11 @@ def statement(tx, level):
         if (sym != 'rparen'):
             error(22) # missing Right Parenthesis error
         getsym()        
-        # END ADDED
+        # END ADDITION
 
     elif sym == "WRITELN":
     	# place your code for WRITELN here
-        # BEGIN ADDED
+        # BEGIN ADDITION
         getsym()
         if (sym != 'lparen'):
             error(28) # missing Left Parenthesis error        
@@ -562,7 +579,7 @@ def statement(tx, level):
         if (sym != 'rparen'):
             error(22) # missing Right Parenthesis error
         getsym()
-        # END ADDED
+        # END ADDITION
 
 #--------------EXPRESSION--------------------------------------
 def expression(tx, level):
